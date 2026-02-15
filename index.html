@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MidnightMics Content Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #222;
+            background: #111;
+        }
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .nav-brand span { color: #fe2c55; }
+        .nav-links a {
+            color: #888;
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .nav-links a:hover { color: #fff; }
+        .nav-links a.active { color: #fe2c55; }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem 3rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        .hero h1 span { color: #fe2c55; }
+        .hero p {
+            color: #999;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* App screens container */
+        .screens { padding: 0 2rem 3rem; max-width: 900px; margin: 0 auto; }
+
+        .screen {
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .screen.active { display: block; }
+        .screen h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .screen h2 .step {
+            background: #fe2c55;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Connect button */
+        .btn-tiktok {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #fe2c55;
+            color: #fff;
+            border: none;
+            padding: 0.85rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-tiktok:hover { background: #e0234a; }
+        .btn-tiktok svg { width: 24px; height: 24px; }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover { background: #333; }
+
+        /* OAuth info */
+        .oauth-info {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-top: 1rem;
+            font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: 0.8rem;
+            color: #aaa;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+        .oauth-info .label { color: #fe2c55; font-weight: 600; }
+        .oauth-info .url { color: #69db7c; }
+
+        /* Connected state */
+        .connected-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #1a3a1a;
+            border: 1px solid #2d5a2d;
+            color: #69db7c;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        /* Upload form */
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            margin-bottom: 1.5rem;
+        }
+        .upload-area:hover { border-color: #fe2c55; background: #1a1015; }
+        .upload-area.has-file { border-color: #69db7c; background: #1a2a1a; }
+        .upload-area svg { width: 48px; height: 48px; color: #555; margin-bottom: 0.75rem; }
+        .upload-area p { color: #777; font-size: 0.95rem; }
+        .upload-area .file-name { color: #69db7c; font-weight: 600; font-size: 1rem; }
+        .upload-area .file-size { color: #888; font-size: 0.85rem; margin-top: 0.25rem; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label {
+            display: block;
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #fe2c55;
+        }
+        .form-row { display: flex; gap: 1rem; }
+        .form-row .form-group { flex: 1; }
+
+        /* Progress */
+        .progress-container { margin: 1.5rem 0; }
+        .progress-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-left: 2px solid #333;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0.85rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+        }
+        .progress-step.active::before { background: #fe2c55; box-shadow: 0 0 8px #fe2c5580; }
+        .progress-step.done::before { background: #69db7c; }
+        .progress-step.done { border-left-color: #69db7c; }
+        .progress-step .step-title { font-weight: 600; font-size: 0.95rem; }
+        .progress-step .step-detail {
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.25rem;
+            word-break: break-all;
+        }
+        .progress-step.active .step-title { color: #fe2c55; }
+        .progress-step.done .step-title { color: #69db7c; }
+        .progress-step.pending .step-title { color: #555; }
+
+        /* Success */
+        .success-box {
+            text-align: center;
+            padding: 2rem;
+        }
+        .success-box svg { width: 64px; height: 64px; color: #69db7c; margin-bottom: 1rem; }
+        .success-box h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .success-box p { color: #999; }
+
+        /* API log */
+        .api-log {
+            background: #0d0d0d;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 0.75rem;
+            line-height: 1.8;
+        }
+        .api-log .log-line { color: #666; }
+        .api-log .log-line .method { color: #69db7c; font-weight: 600; }
+        .api-log .log-line .status { color: #ffd43b; }
+        .api-log .log-line .endpoint { color: #74c0fc; }
+        .api-log .log-line .error { color: #fe2c55; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #555;
+            font-size: 0.8rem;
+            border-top: 1px solid #1a1a1a;
+        }
+        .footer a { color: #888; text-decoration: none; }
+        .footer a:hover { color: #fe2c55; }
+
+        /* Scope badges */
+        .scope-badge {
+            display: inline-block;
+            background: #2a1a2a;
+            border: 1px solid #5a2a5a;
+            color: #d6a3ff;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: monospace;
+            margin: 0.15rem;
+        }
+
+        /* Sandbox banner */
+        .sandbox-banner {
+            background: #2a2a00;
+            border: 1px solid #555500;
+            color: #ffd43b;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="sandbox-banner">SANDBOX MODE — TikTok Developer Portal Sandbox Environment</div>
+
+    <nav class="nav">
+        <div class="nav-brand"><span>Midnight</span>Mics Content Tool</div>
+        <div class="nav-links">
+            <a href="#" class="active" id="nav-upload">Upload</a>
+            <a href="#" id="nav-history">History</a>
+            <a href="terms.html">Terms</a>
+            <a href="privacy.html">Privacy</a>
+        </div>
+    </nav>
+
+    <!-- Screen 1: Connect Account -->
+    <div class="screens">
+        <div class="screen active" id="screen-connect">
+            <div class="hero">
+                <h1>Publish to <span>TikTok</span></h1>
+                <p>Connect your TikTok account to upload AI-generated videos directly. Uses the Content Posting API with <code>video.upload</code> scope.</p>
+
+                <button class="btn-tiktok" onclick="startOAuth()">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.75a8.18 8.18 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.18z"/></svg>
+                    Connect TikTok Account
+                </button>
+
+                <div class="oauth-info" id="oauth-details" style="display:none;">
+                    <div><span class="label">OAuth URL:</span></div>
+                    <div class="url">https://www.tiktok.com/v2/auth/authorize/?client_key={CLIENT_KEY}&scope=video.upload&response_type=code&redirect_uri=https://rogleeperez77-max.github.io/tiktok-policies/callback.html</div>
+                    <br>
+                    <div><span class="label">Scope:</span> <span class="scope-badge">video.upload</span></div>
+                    <div><span class="label">Product:</span> Content Posting API</div>
+                    <div><span class="label">Response Type:</span> authorization_code</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: OAuth Redirect (simulated) -->
+        <div class="screen" id="screen-oauth">
+            <h2><span class="step">1</span> TikTok Authorization</h2>
+            <div style="background: #1a1a1a; border-radius: 12px; padding: 2rem; text-align: center; margin: 1rem 0;">
+                <div style="background: #fff; border-radius: 8px; padding: 1.5rem; max-width: 400px; margin: 0 auto; color: #000;">
+                    <svg viewBox="0 0 24 24" fill="#000" width="40" height="40" style="margin-bottom:0.75rem"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.75a8.18 8.18 0 0 0 4.76 1.52v-3.4a4.85 4.85 0 0 1-1-.18z"/></svg>
+                    <h3 style="font-size:1.1rem; margin-bottom:0.5rem;">MidnightMics Content Tool wants to access your TikTok account</h3>
+                    <p style="color:#666; font-size:0.9rem; margin-bottom:1rem;">This will allow the app to:</p>
+                    <div style="text-align:left; background:#f5f5f5; border-radius:6px; padding:1rem; margin-bottom:1rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                            <span style="color:#69db7c;">&#10003;</span> Upload videos to your account
+                        </div>
+                        <div style="font-size:0.8rem; color:#999; margin-left:1.5rem;">Scope: video.upload</div>
+                    </div>
+                    <button onclick="completeOAuth()" style="background:#fe2c55; color:#fff; border:none; padding:0.7rem 2rem; border-radius:6px; font-size:1rem; cursor:pointer; width:100%;">Authorize</button>
+                    <p style="margin-top:0.75rem; font-size:0.8rem; color:#999;">Redirects to: rogleeperez77-max.github.io</p>
+                </div>
+            </div>
+
+            <div class="oauth-info">
+                <div><span class="label">Request:</span></div>
+                <div class="url">GET https://www.tiktok.com/v2/auth/authorize/</div>
+                <div>&nbsp;&nbsp;client_key: {CLIENT_KEY}</div>
+                <div>&nbsp;&nbsp;scope: video.upload</div>
+                <div>&nbsp;&nbsp;response_type: code</div>
+                <div>&nbsp;&nbsp;redirect_uri: https://rogleeperez77-max.github.io/tiktok-policies/callback.html</div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Upload Form -->
+        <div class="screen" id="screen-upload">
+            <h2><span class="step">2</span> Upload Video</h2>
+
+            <div class="connected-badge">
+                <span>&#10003;</span> Connected as @midnightmics
+            </div>
+
+            <div class="upload-area" id="upload-area" onclick="selectFile()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 16V4m0 0L8 8m4-4l4 4M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2"/>
+                </svg>
+                <p>Click to select a video file</p>
+                <p style="font-size:0.8rem; color:#555; margin-top:0.5rem;">MP4, MOV — Max 4GB</p>
+            </div>
+
+            <div class="form-group">
+                <label>Caption</label>
+                <textarea id="caption" placeholder="Describe your video...">AI-generated tech explainer — when the algorithm hits different #tech #ai #midnightmics</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Privacy Level</label>
+                    <select id="privacy">
+                        <option value="PUBLIC_TO_EVERYONE">Public</option>
+                        <option value="MUTUAL_FOLLOW_FRIENDS">Friends</option>
+                        <option value="SELF_ONLY">Private</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Disable Comments</label>
+                    <select id="comments">
+                        <option value="false">No (allow comments)</option>
+                        <option value="true">Yes (disable)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Disable Duet</label>
+                    <select><option>No</option><option>Yes</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Disable Stitch</label>
+                    <select><option>No</option><option>Yes</option></select>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:1rem; margin-top:1rem;">
+                <button class="btn-tiktok" onclick="startUpload()" id="btn-upload" disabled>
+                    Upload to TikTok
+                </button>
+                <button class="btn-secondary" onclick="startUpload()" id="btn-draft" disabled>
+                    Save as Draft
+                </button>
+            </div>
+
+            <div class="oauth-info" style="margin-top:1.5rem;">
+                <div><span class="label">API Endpoint:</span></div>
+                <div class="url">POST https://open.tiktokapis.com/v2/post/publish/inbox/video/init/</div>
+                <div><span class="label">Method:</span> FILE_UPLOAD</div>
+                <div><span class="label">Headers:</span></div>
+                <div>&nbsp;&nbsp;Authorization: Bearer {access_token}</div>
+                <div>&nbsp;&nbsp;Content-Type: application/json</div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Upload Progress -->
+        <div class="screen" id="screen-progress">
+            <h2><span class="step">3</span> Publishing Video</h2>
+
+            <div class="progress-container" id="progress-steps">
+                <div class="progress-step done" id="step-init">
+                    <div>
+                        <div class="step-title">Initialize Upload</div>
+                        <div class="step-detail">POST /v2/post/publish/inbox/video/init/ → 200 OK</div>
+                    </div>
+                </div>
+                <div class="progress-step done" id="step-chunk1">
+                    <div>
+                        <div class="step-title">Upload Chunk 1/3</div>
+                        <div class="step-detail">PUT /video/?upload_id=ut-xxx&upload_token=xxx — Content-Range: bytes 0-5242879/15728640</div>
+                    </div>
+                </div>
+                <div class="progress-step active" id="step-chunk2">
+                    <div>
+                        <div class="step-title">Upload Chunk 2/3</div>
+                        <div class="step-detail">PUT /video/?upload_id=ut-xxx — Content-Range: bytes 5242880-10485759/15728640</div>
+                    </div>
+                </div>
+                <div class="progress-step pending" id="step-chunk3">
+                    <div>
+                        <div class="step-title">Upload Chunk 3/3</div>
+                        <div class="step-detail">PUT /video/?upload_id=ut-xxx — Content-Range: bytes 10485760-15728639/15728640</div>
+                    </div>
+                </div>
+                <div class="progress-step pending" id="step-status">
+                    <div>
+                        <div class="step-title">Check Publish Status</div>
+                        <div class="step-detail">POST /v2/post/publish/status/fetch/ — polling...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-log" id="api-log">
+                <div class="log-line"><span class="method">POST</span> <span class="endpoint">https://open.tiktokapis.com/v2/post/publish/inbox/video/init/</span></div>
+                <div class="log-line">&nbsp;&nbsp;→ <span class="status">200</span> {"publish_id": "v_pub_xxx", "upload_url": "https://open-upload.tiktokapis.com/video/?upload_id=ut-xxx"}</div>
+                <div class="log-line"><span class="method">PUT</span> <span class="endpoint">https://open-upload.tiktokapis.com/video/?upload_id=ut-xxx</span></div>
+                <div class="log-line">&nbsp;&nbsp;→ <span class="status">200</span> Chunk 1/3 uploaded (5.0MB)</div>
+                <div class="log-line"><span class="method">PUT</span> <span class="endpoint">https://open-upload.tiktokapis.com/video/?upload_id=ut-xxx</span></div>
+                <div class="log-line">&nbsp;&nbsp;→ <span class="status">uploading...</span> Chunk 2/3 (5.0MB)</div>
+            </div>
+        </div>
+
+        <!-- Screen 5: Success -->
+        <div class="screen" id="screen-success">
+            <div class="success-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <h3>Video Published Successfully</h3>
+                <p>Your video has been uploaded to @midnightmics via the Content Posting API.</p>
+
+                <div class="oauth-info" style="text-align:left; margin-top:1.5rem;">
+                    <div><span class="label">Publish ID:</span> v_pub_sandbox_demo_001</div>
+                    <div><span class="label">Status:</span> <span style="color:#69db7c;">PUBLISH_COMPLETE</span></div>
+                    <div><span class="label">Upload Method:</span> FILE_UPLOAD (3 chunks)</div>
+                    <div><span class="label">Scope Used:</span> <span class="scope-badge">video.upload</span></div>
+                    <div><span class="label">Privacy:</span> PUBLIC_TO_EVERYONE</div>
+                    <div><span class="label">API Product:</span> Content Posting API</div>
+                </div>
+
+                <div style="margin-top:1.5rem; display:flex; gap:1rem; justify-content:center;">
+                    <button class="btn-tiktok" onclick="resetDemo()">Upload Another Video</button>
+                    <button class="btn-secondary" onclick="showConnect()">Disconnect</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>MidnightMics Content Tool &mdash; Personal content management for @midnightmics</p>
+        <p style="margin-top:0.5rem;">
+            <a href="terms.html">Terms of Service</a> &nbsp;|&nbsp;
+            <a href="privacy.html">Privacy Policy</a>
+        </p>
+        <p style="margin-top:0.5rem;">Uses TikTok Content Posting API &mdash; Sandbox Environment</p>
+    </footer>
+
+    <script>
+        // Demo flow controller
+        let currentScreen = 'connect';
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active');
+            currentScreen = id;
+        }
+
+        function startOAuth() {
+            document.getElementById('oauth-details').style.display = 'block';
+            setTimeout(() => showScreen('oauth'), 800);
+        }
+
+        function completeOAuth() {
+            // Simulate OAuth callback with auth code
+            showScreen('upload');
+            addLog('OAuth callback received: code=sandbox_auth_code_xxx');
+            addLog('POST https://open.tiktokapis.com/v2/oauth/token/');
+            addLog('  → 200 {"access_token": "act.sandbox_xxx", "open_id": "sandbox_user_xxx", "scope": "video.upload"}');
+        }
+
+        let fileSelected = false;
+        function selectFile() {
+            const area = document.getElementById('upload-area');
+            area.classList.add('has-file');
+            area.innerHTML = `
+                <div class="file-name">tech_explainer_v1.mp4</div>
+                <div class="file-size">15.0 MB — MP4 / H.264 / 1080x1920 / 00:32</div>
+                <p style="color:#555; font-size:0.8rem; margin-top:0.5rem;">Click to change file</p>
+            `;
+            fileSelected = true;
+            document.getElementById('btn-upload').disabled = false;
+            document.getElementById('btn-draft').disabled = false;
+        }
+
+        function startUpload() {
+            if (!fileSelected) return;
+            showScreen('progress');
+            animateUpload();
+        }
+
+        function animateUpload() {
+            const steps = ['step-init', 'step-chunk1', 'step-chunk2', 'step-chunk3', 'step-status'];
+            let idx = 2; // Start from chunk 2 (first two already shown as done)
+
+            const interval = setInterval(() => {
+                if (idx < steps.length) {
+                    document.getElementById(steps[idx]).classList.remove('pending', 'active');
+                    document.getElementById(steps[idx]).classList.add('active');
+                    if (idx > 0) {
+                        document.getElementById(steps[idx - 1]).classList.remove('active');
+                        document.getElementById(steps[idx - 1]).classList.add('done');
+                    }
+
+                    if (idx === 2) {
+                        addLog('PUT https://open-upload.tiktokapis.com/video/?upload_id=ut-xxx');
+                        addLog('  → 200 Chunk 2/3 uploaded (5.0MB)');
+                    } else if (idx === 3) {
+                        addLog('PUT https://open-upload.tiktokapis.com/video/?upload_id=ut-xxx');
+                        addLog('  → 200 Chunk 3/3 uploaded (5.0MB)');
+                    } else if (idx === 4) {
+                        addLog('POST https://open.tiktokapis.com/v2/post/publish/status/fetch/');
+                        addLog('  → 200 {"status": "PROCESSING"}');
+                        setTimeout(() => {
+                            addLog('POST https://open.tiktokapis.com/v2/post/publish/status/fetch/');
+                            addLog('  → 200 {"status": "PUBLISH_COMPLETE", "publish_id": "v_pub_sandbox_demo_001"}');
+                        }, 800);
+                    }
+                    idx++;
+                } else {
+                    clearInterval(interval);
+                    // Mark last step done
+                    document.getElementById(steps[steps.length - 1]).classList.remove('active');
+                    document.getElementById(steps[steps.length - 1]).classList.add('done');
+                    setTimeout(() => showScreen('success'), 1000);
+                }
+            }, 1500);
+        }
+
+        const logEl = document.createElement('div');
+        logEl.id = 'live-log';
+        function addLog(msg) {
+            const log = document.getElementById('api-log');
+            if (!log) return;
+            const line = document.createElement('div');
+            line.className = 'log-line';
+
+            if (msg.startsWith('POST') || msg.startsWith('PUT') || msg.startsWith('GET')) {
+                const parts = msg.split(' ');
+                line.innerHTML = `<span class="method">${parts[0]}</span> <span class="endpoint">${parts.slice(1).join(' ')}</span>`;
+            } else if (msg.includes('→')) {
+                const parts = msg.split('→');
+                line.innerHTML = `${parts[0]}→ <span class="status">${parts[1].trim()}</span>`;
+            } else {
+                line.textContent = msg;
+            }
+            log.appendChild(line);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function resetDemo() {
+            fileSelected = false;
+            showScreen('upload');
+            document.getElementById('upload-area').classList.remove('has-file');
+            document.getElementById('upload-area').innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 16V4m0 0L8 8m4-4l4 4M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2"/>
+                </svg>
+                <p>Click to select a video file</p>
+                <p style="font-size:0.8rem; color:#555; margin-top:0.5rem;">MP4, MOV — Max 4GB</p>
+            `;
+            document.getElementById('btn-upload').disabled = true;
+            document.getElementById('btn-draft').disabled = true;
+        }
+
+        function showConnect() {
+            showScreen('connect');
+            document.getElementById('oauth-details').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
